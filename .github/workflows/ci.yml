@@ -11,10 +11,11 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    # Variáveis de ambiente para o job
+    # Variáveis de ambiente globais para o job
     env:
-      DATABASE_URL: "file:./prisma/dev.db" # SQLite temporário para CI
+      DATABASE_URL: "file:./prisma/dev.db"  # SQLite temporário para CI
       NODE_ENV: "test"
+      JWT_SECRET: "secret_for_tests"        # necessário para gerar e validar tokens JWT nos testes
 
     steps:
       # 1️⃣ Pega o código do repositório
@@ -27,11 +28,11 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Instala dependências (respeita package-lock.json)
+      # 3️⃣ Instala dependências
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Cria arquivo .env (opcional, se Prisma precisar de leitura via dotenv)
+      # 4️⃣ Cria arquivo .env (opcional, Prisma pode ler)
       - name: Create .env
         run: echo "DATABASE_URL=file:./prisma/dev.db" > .env
 
@@ -39,7 +40,7 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      # 6️⃣ Executa migrations (deploy seguro no CI)
+      # 6️⃣ Aplica migrations
       - name: Apply Prisma migrations
         run: npx prisma migrate deploy
 
