@@ -1,0 +1,28 @@
+services:
+  api:
+    build: .
+    container_name: api-node-ts-prisma-prod
+    ports:
+      - "3000:3000"       # mapeia porta do container para localhost
+    env_file:
+      - .env
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+# Explicação:
+# - Aplica migrations automaticamente antes de rodar
+# - Roda o build compilado em Node puro
+
+# Comando	Arquivos usados	Quando usar
+# docker-compose up	docker-compose.yml + override	Desenvolvimento (hot reload)
+# docker-compose up --build	docker-compose.yml + override	Desenvolvimento com rebuild
+# docker-compose -f docker-compose.yml up --build	apenas docker-compose.yml	Produção, build otimizado
+# docker-compose build	apenas docker-compose.yml	Apenas build produção
+
+# Para testes
+# docker-compose run --rm api npm test
+
+# docker-compose run cria um container temporário baseado na imagem do serviço api.
+# Esse container tem todas as dependências instaladas e o código atual via volume.
+# Assim, os testes rodam corretamente sem precisar de node_modules no host.
+
+# Depois de buildar, docker compose up pra rodar container em dev

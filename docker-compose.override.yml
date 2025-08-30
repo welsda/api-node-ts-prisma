@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    container_name: api-node-ts-prisma
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app                # Sincroniza código do host
+      - /app/node_modules     # Garante que node_modules do container não é sobrescrito
+      - ./prisma/dev.db:/app/prisma/dev.db  # Mantém SQLite persistido
+    env_file:
+      - .env
+    command: npm run dev             # Roda ts-node-dev com hot reload
