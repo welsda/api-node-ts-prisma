@@ -1,6 +1,6 @@
 name: Node.js CI
 
-# Quando executar a pipeline
+# Quando rodar a pipeline
 on:
   push:
     branches: [main]
@@ -9,7 +9,12 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest  # VM que vai executar os passos
+    runs-on: ubuntu-latest
+
+    # Variáveis de ambiente para o job
+    env:
+      DATABASE_URL: "file:./prisma/dev.db" # SQLite temporário para CI
+      NODE_ENV: "test"
 
     steps:
       # 1️⃣ Pega o código do repositório
@@ -22,14 +27,22 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Instala dependências
+      # 3️⃣ Instala dependências (respeita package-lock.json)
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Gera Prisma client
+      # 4️⃣ Cria arquivo .env (opcional, se Prisma precisar de leitura via dotenv)
+      - name: Create .env
+        run: echo "DATABASE_URL=file:./prisma/dev.db" > .env
+
+      # 5️⃣ Gera Prisma Client
       - name: Generate Prisma client
         run: npx prisma generate
 
-      # 5️⃣ Executa testes
+      # 6️⃣ Executa migrations (deploy seguro no CI)
+      - name: Apply Prisma migrations
+        run: npx prisma migrate deploy
+
+      # 7️⃣ Roda os testes
       - name: Run tests
         run: npm test
