@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Node.js CI/CD
 
 # Quando rodar a pipeline
 on:
@@ -47,3 +47,29 @@ jobs:
       # 7️⃣ Roda os testes
       - name: Run tests
         run: npm test
+
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+    needs: build-and-test   # roda só se os testes passarem
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t api-node-ts-prisma:latest .
+
+      - name: Tag Docker image
+        run: |
+          docker tag api-node-ts-prisma:latest ${{ secrets.DOCKERHUB_USERNAME }}/api-node-ts-prisma:latest
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/api-node-ts-prisma:latest
